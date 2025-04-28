@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import TelegramBot from 'node-telegram-bot-api';
-
-// Initialize the bot with your token
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: false });
+//import { findOrCreateTelegramUser } from '@/lib/prisma';
+import { sendMessage } from '@/lib/telegram';
 
 export async function POST(req: Request) {
-  try {
+  
     const update = await req.json();
     
     // Handle incoming messages
@@ -13,13 +11,31 @@ export async function POST(req: Request) {
       const chatId = update.message.chat.id;
       const text = update.message.text;
       
+      // Handle /start command
+      if (text === '/start') {
+        await sendMessage(
+          chatId,
+          '👋 Welcome! I\'m your notification bot.\n\n' +
+          'Your account will be created automatically when you send your first message. ' +
+          'Feel free to start chatting!'
+        );
+        
+        return NextResponse.json({ ok: true });
+      }
+      
+      // Create or update user
+      /*await findOrCreateTelegramUser({
+        id: update.message.from.id,
+        username: update.message.from.username,
+        first_name: update.message.from.first_name,
+        last_name: update.message.from.last_name,
+      });*/
+      
       // Respond with "You said" followed by the message
-      await bot.sendMessage(chatId, `You said: ${text}`);
+      const response = await sendMessage(chatId, `You said: ${text}`);
+      console.log("Telegram client response", response);
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    console.error('Error handling Telegram webhook:', error);
-    return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
-  }
+  
 } 
