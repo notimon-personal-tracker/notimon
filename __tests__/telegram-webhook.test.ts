@@ -1,24 +1,34 @@
 import { POST } from '@/app/api/telegram/webhook/route';
-//import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
+import { NextRequest } from 'next/server';
 
 const originalFetch = global.fetch;
 
 describe('Telegram Webhook', () => {
   beforeEach(async () => {
     // Clean up the database before each test
-    //await prisma.user.deleteMany();
+    await prisma.user.deleteMany();
 
   });
 
   afterAll(async () => {
     // Clean up and close Prisma connection
-    //await prisma.user.deleteMany();
-    //await prisma.$disconnect();
+    await prisma.user.deleteMany();
+    await prisma.$disconnect();
     global.fetch = originalFetch;
   });
 
-  /*it('should create a new user when receiving a message', async () => {
-    // Simulate a Telegram message
+  it('should create a new user when receiving a message', async () => {
+    
+    global.fetch = jest.fn((url, init) => {
+      const body = JSON.parse(init.body);
+      expect(body.text).toContain("You said: Hello, bot!");
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ok: true}),
+      })
+    }) as jest.Mock;
+
     const mockTelegramMessage = {
       message: {
         message_id: 1,
@@ -54,14 +64,15 @@ describe('Telegram Webhook', () => {
     });
  
     expect(user).toBeTruthy();
-    expect(user?.telegramId).toBe(123456789);
+    expect(user?.telegramId).toBe(BigInt(123456789));
     expect(user?.username).toBe('johndoe');
     expect(user?.firstName).toBe('John');
     expect(user?.lastName).toBe('Doe');
     expect(user?.isActive).toBe(true);
-  });*/
 
-  let telegramJson: Promise<any>;
+    expect((await prisma.user.findMany()).length).toBe(1);
+  });
+
   it('should respond with intro to /start command without creating a user', async () => {
     
     global.fetch = jest.fn((url, init) => {
@@ -104,10 +115,7 @@ describe('Telegram Webhook', () => {
     expect(webhookResponse.status).toBe(200);
 
     // Verify no user was created
-    /*const user = await prisma.user.findUnique({
-      where: { telegramId: 123456789 },
-    });
- 
-    expect(user).toBeNull();*/
+    const users = await prisma.user.findMany();
+    expect(users.length).toBe(0);
   });
 }); 

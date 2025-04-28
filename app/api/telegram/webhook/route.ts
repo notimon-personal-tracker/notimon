@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-//import { findOrCreateTelegramUser } from '@/lib/prisma';
+import { findOrCreateTelegramUser } from '@/lib/prisma';
 import { sendMessage } from '@/lib/telegram';
 
 export async function POST(req: Request) {
@@ -24,16 +24,15 @@ export async function POST(req: Request) {
       }
       
       // Create or update user
-      /*await findOrCreateTelegramUser({
+      await findOrCreateTelegramUser({
         id: update.message.from.id,
         username: update.message.from.username,
         first_name: update.message.from.first_name,
         last_name: update.message.from.last_name,
-      });*/
+      });
       
-      // Respond with "You said" followed by the message
       const response = await sendMessage(chatId, `You said: ${text}`);
-      console.log("Telegram client response", response);
+      console.log("Telegram API response", response);
     }
 
     return NextResponse.json({ ok: true });

@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
-  telegramId    Int       @unique
+  telegramId    BigInt    @unique
   username      String?   @unique
   firstName     String?
   lastName      String?

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../prisma/generated/prisma';
 
 // https://www.prisma.io/docs/orm/more/help-and-troubleshooting/nextjs-help
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
