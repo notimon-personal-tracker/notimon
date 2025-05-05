@@ -109,3 +109,42 @@ Before running tests for the first time, make sure to set up the test database:
 ```bash
 npm test
 ```
+
+## Admin CLI
+
+The admin CLI allows you to manage topics and questions. Here's how to use it:
+
+### Topics
+
+```bash
+# Create a new topic
+npm run admin -- create-topic -n "Health" -d "Health-related questions"
+
+# List all topics
+npm run admin -- list-topics
+```
+
+### Questions
+
+```bash
+# Create a new question (with options)
+npm run admin -- create-question -t "How many hours did you sleep?" -o "0-4" "4-6" "6-8" "8+"
+
+# Create a question and associate it with topics
+npm run admin -- create-question -t "How many hours did you sleep?" -o "0-4" "4-6" "6-8" "8+" --topics topic_id_1 topic_id_2
+
+# List all questions
+npm run admin -- list-questions
+
+# Associate an existing question with a topic
+npm run admin -- add-question-to-topic -q question_id -t topic_id
+```
+
+Each command supports the `--help` flag for more information:
+```bash
+npm run admin -- --help
+npm run admin -- create-topic --help
+npm run admin -- create-question --help
+```
+
+Remember: When passing arguments to the admin script through npm, you need to add `--` before the arguments.
