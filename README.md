@@ -1,30 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Notimon
 
-## Getting Started
+A quantified self app to help you track anything about yourself.
 
-First, run the development server:
+The first iteration is a telegram bot that periodically asks you questions and stores your responses for later analysis.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Development
+
+Run the database
+
+```
+docker compose up db
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Install dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set up the database
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate dev
+```
+
+Run the dev server
+
+```
+npm run dev
+```
+
+For local HTTPS development with Telegram webhooks, you can use [ngrok](https://ngrok.com) to create a secure tunnel to your local server.
 
 
-## Running in docker-compose
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Run
 
-    docker compose up
+## Deployment
 
-This will build the image, start a container, and you can visit the site at http://localhost:3000
+### Setting up the Telegram Webhook
+
+Set up the Telegram webhook using the following command (replace with your values):
+```bash
+curl -F "url=https://your-domain.com/api/telegram/webhook" https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook
+```
+
+### Environment Variables
+
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/notimon"
+TELEGRAM_BOT_TOKEN="your_bot_token_here"
+```
