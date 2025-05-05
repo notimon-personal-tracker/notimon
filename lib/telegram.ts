@@ -6,7 +6,7 @@
  * @returns A promise that resolves with the API response
  */
 export async function sendMessage(
-  chatId: number,
+  chatId: bigint,
   text: string,
   options: Record<string, any> = {}
 ): Promise<any> {
@@ -25,7 +25,7 @@ export async function sendMessage(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chat_id: chatId,
+        chat_id: chatId.toString(),
         text,
         ...options,
       }),
@@ -33,7 +33,7 @@ export async function sendMessage(
     console.log("Telegram client response", response, response.status, response.ok, response.json);
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Telegram API error: ${errorData.description || response.statusText}`);
+      throw new Error(`Telegram API error: ${JSON.stringify(errorData)}`);
     }
     
     return await response.json();

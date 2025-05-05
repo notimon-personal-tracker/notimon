@@ -14,7 +14,8 @@
     "test:watch": "jest --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "send-questions": "ts-node --project tsconfig.node.json scripts/sendDailyQuestions.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",

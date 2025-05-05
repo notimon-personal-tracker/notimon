@@ -8,8 +8,7 @@ The first iteration is a telegram bot that periodically asks you questions and s
 
 Run the database
 
-```
-docker compose up db
+```docker compose up db
 ```
 
 Install dependencies
@@ -25,7 +24,7 @@ Set up the database
 # Generate Prisma client
 npx prisma generate
 
-# Run database migrations
+# Make and run database migrations locally
 npx prisma migrate dev
 ```
 
@@ -55,4 +54,30 @@ curl -F "url=https://your-domain.com/api/telegram/webhook" https://api.telegram.
 ```
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/notimon"
 TELEGRAM_BOT_TOKEN="your_bot_token_here"
+```
+
+### Run migrations
+
+```
+npx prisma migrate deploy
+```
+
+## Sending questions regularly
+
+### Using npm
+```bash
+npm run send-questions
+```
+
+### Using ts-node directly
+```bash
+ts-node --project tsconfig.node.json scripts/sendDailyQuestions.ts
+```
+
+### Setting up as a Cron Job
+
+e.g.
+
+```bash
+0 9 * * * cd /path/to/notimon && /usr/local/bin/npm run send-questions
 ```
