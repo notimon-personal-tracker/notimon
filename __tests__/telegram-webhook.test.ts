@@ -80,7 +80,7 @@ describe('Telegram Webhook', () => {
       expect(init.method).toBe("POST");
       expect(init.headers['Content-Type']).toBe("application/json");
       const body = JSON.parse(init.body);
-      expect(body.chat_id).toBe(123456789);
+      expect(body.chat_id).toBe("123456789");
       expect(body.text).toContain("Welcome");
       return Promise.resolve({
         ok: true,

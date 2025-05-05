@@ -24,4 +24,63 @@ model User {
   updatedAt     DateTime  @updatedAt
   isActive      Boolean   @default(true)
   lastMessageAt DateTime?
+  preferences   UserQuestionPreference[]
+  answers       Answer[]
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  text        String
+  options     String[]  // Array of valid multiple choice options
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isActive    Boolean   @default(true)
+  preferences UserQuestionPreference[]
+  answers     Answer[]
+  topics      QuestionTopic[]
+}
+
+model Topic {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isActive    Boolean   @default(true)
+  questions   QuestionTopic[]
+}
+
+model QuestionTopic {
+  id         String   @id @default(cuid())
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([questionId, topicId])
+}
+
+model UserQuestionPreference {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  isEnabled  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, questionId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  answer     String
+  createdAt  DateTime @default(now())
 }

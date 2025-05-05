@@ -18,6 +18,7 @@ services:
       - POSTGRES_DB=notimon
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/02-init-test-db.sql
 
 volumes:
   postgres_data:
