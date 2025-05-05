@@ -52,9 +52,9 @@ model Topic {
 
 model QuestionTopic {
   id         String   @id @default(cuid())
-  question   Question @relation(fields: [questionId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId String
-  topic      Topic    @relation(fields: [topicId], references: [id])
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   topicId    String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
