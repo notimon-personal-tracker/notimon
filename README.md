@@ -8,8 +8,17 @@ The first iteration is a telegram bot that periodically asks you questions and s
 
 Run the database
 
-```docker compose up db
+```bash
+docker compose up db
 ```
+
+This will create two databases:
+- `notimon` (main development database)
+- `notimon_test` (test database)
+
+### Database Connection Strings
+- Development: `postgresql://postgres:postgres@localhost:5432/notimon`
+- Test: `postgresql://notimon_test:notimon_test@localhost:5432/notimon_test`
 
 Install dependencies
 
@@ -80,4 +89,23 @@ e.g.
 
 ```bash
 0 9 * * * cd /path/to/notimon && /usr/local/bin/npm run send-questions
+```
+
+## Testing
+
+### Database Setup
+
+The test database is automatically created when you start Docker. To manage migrations:
+
+```bash
+# Deploy all pending migrations to the test database (safe for CI/CD)
+npm run prisma:migrate:test
+```
+
+### Running Tests
+
+Before running tests for the first time, make sure to set up the test database:
+
+```bash
+npm test
 ```

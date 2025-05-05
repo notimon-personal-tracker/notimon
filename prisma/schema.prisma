@@ -37,6 +37,29 @@ model Question {
   isActive    Boolean   @default(true)
   preferences UserQuestionPreference[]
   answers     Answer[]
+  topics      QuestionTopic[]
+}
+
+model Topic {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isActive    Boolean   @default(true)
+  questions   QuestionTopic[]
+}
+
+model QuestionTopic {
+  id         String   @id @default(cuid())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  topic      Topic    @relation(fields: [topicId], references: [id])
+  topicId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([questionId, topicId])
 }
 
 model UserQuestionPreference {

@@ -15,7 +15,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "send-questions": "ts-node --project tsconfig.node.json scripts/sendDailyQuestions.ts"
+    "send-questions": "ts-node --project tsconfig.node.json scripts/sendDailyQuestions.ts",
+    "prisma:migrate:test": "DATABASE_URL=postgresql://notimon_test:notimon_test@localhost:5432/notimon_test prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",
