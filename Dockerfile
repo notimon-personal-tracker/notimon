@@ -24,6 +24,7 @@ COPY . .
 # ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PRIVATE_STANDALONE=true
 
+RUN npm run prisma:generate
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -53,4 +54,5 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npm run prisma:deploy && node server.js"]
+
