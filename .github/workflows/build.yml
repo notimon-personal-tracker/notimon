@@ -48,6 +48,7 @@ jobs:
               --publish 3000:3000 \
               -e DATABASE_URL=postgresql://notimon_test:notimon_test@postgres:5432/notimon_test \
               notimon:latest
+          docker logs notimon
 
 
       - name: Check if the container is serving the homepage
