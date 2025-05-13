@@ -47,6 +47,7 @@ jobs:
               --name notimon \
               --publish 3000:3000 \
               -e DATABASE_URL=postgresql://notimon_test:notimon_test@postgres:5432/notimon_test \
+              --log-driver local \
               notimon:latest
           docker logs notimon
 
