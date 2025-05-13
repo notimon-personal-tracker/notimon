@@ -16,10 +16,6 @@ This will create two databases:
 - `notimon` (main development database)
 - `notimon_test` (test database)
 
-### Database Connection Strings
-- Development: `postgresql://postgres:postgres@localhost:5432/notimon`
-- Test: `postgresql://notimon_test:notimon_test@localhost:5432/notimon_test`
-
 Install dependencies
 
 ```bash
