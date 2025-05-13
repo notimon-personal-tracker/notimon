@@ -51,7 +51,14 @@ jobs:
 
 
       - name: Check if the container is serving the homepage
-        run: curl --silent --fail-with-body --show-error --retry 5 --retry-max-time 120 http://localhost:3000 | grep "Get started by editing"
+        run: |
+          curl --silent \
+               --fail-with-body \
+               --show-error \
+               --retry 5 \
+               --retry-connrefused \
+               --retry-max-time 120 \
+               http://localhost:3000 | grep "Get started by editing"
 
       - run: docker logs notimon
         if: always()
