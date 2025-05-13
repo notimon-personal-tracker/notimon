@@ -54,3 +54,4 @@ jobs:
         run: curl --silent --fail-with-body --show-error --retry 5 --retry-max-time 120 http://localhost:3000 | grep "Get started by editing"
 
       - run: docker logs notimon
+        if: always()
