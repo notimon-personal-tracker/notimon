@@ -17,9 +17,15 @@ describe('Admin Library', () => {
     await prisma.questionTopic.deleteMany();
     await prisma.question.deleteMany();
     await prisma.topic.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   afterAll(async () => {
+    await prisma.answer.deleteMany();
+    await prisma.questionTopic.deleteMany();
+    await prisma.question.deleteMany();
+    await prisma.topic.deleteMany();
+    await prisma.user.deleteMany();
     await prisma.$disconnect();
   });
 
