@@ -43,8 +43,7 @@ jobs:
               --network host \
               --detach \
               --name notimon \
-              --publish 3000:3000 \
-              -e DATABASE_URL=postgresql://notimon_test:notimon_test@postgres:5432/notimon_test \
+              -e DATABASE_URL=postgresql://notimon_test:notimon_test@localhost:5432/notimon_test \
               --log-driver local \
               --health-cmd "curl -f http://localhost:3000 || exit 1" \
               --health-interval 5s \
