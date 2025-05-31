@@ -18,6 +18,8 @@ jobs:
           POSTGRES_USER: notimon_test
           POSTGRES_PASSWORD: notimon_test
           POSTGRES_DB: notimon_test
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -40,9 +42,10 @@ jobs:
       - name: Start container
         run: |
           docker run \
-              --network host \
               --detach \
               --name notimon \
+              --publish 3000:3000 \
+              --network container:postgres \
               -e DATABASE_URL=postgresql://notimon_test:notimon_test@localhost:5432/notimon_test \
               --log-driver local \
               --health-cmd "curl -f http://localhost:3000 || exit 1" \
@@ -50,10 +53,10 @@ jobs:
               --health-timeout 3s \
               --health-retries 5 \
               notimon:latest
-
+          
           # Wait for container to be healthy
           timeout 60s bash -c 'while [[ "$(docker inspect -f {{.State.Health.Status}} notimon)" != "healthy" ]]; do sleep 2; done'
-
+          
           # Show logs for debugging
           docker logs notimon
 
