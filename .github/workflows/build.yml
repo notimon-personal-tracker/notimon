@@ -30,7 +30,7 @@ jobs:
               --name notimon \
               -e DATABASE_URL=postgresql://nonsense:nonsense@localhost:5432/notimon_test \
               notimon:latest \
-            | grep "Can't reach database server at `localhost:5432`"
+            | grep "Can't reach database server at"
 
       - run: docker logs notimon
         if: always()
