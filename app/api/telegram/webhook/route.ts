@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
 import { findOrCreateTelegramUser } from '@/lib/prisma';
 import { sendMessage } from '@/lib/telegram';
+import * as crypto from 'crypto'
+
+
+
+function isAuthenticRequest(req: Request) {
+  const authHeader = req.headers.get('X-Telegram-Bot-Api-Secret-Token');
+  if (!process.env.TELEGRAM_WEBHOOK_SECRET)
+    throw new Error('TELEGRAM_WEBHOOK_SECRET is not set in environment variables');
+
+  if (!authHeader)
+    return false
+  
+  return crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(process.env.TELEGRAM_WEBHOOK_SECRET))
+}
 
 export async function POST(req: Request) {
-  
+    if (!isAuthenticRequest(req))
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const update = await req.json();
     
     // Handle incoming messages
