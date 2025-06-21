@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { findOrCreateTelegramUser } from '@/lib/prisma';
+import { findOrCreateUserByChannel } from '@/lib/prisma';
 import { sendMessage } from '@/lib/telegram';
 import * as crypto from 'crypto'
-
-
+import { Channel } from '@/prisma/generated/prisma';
 
 function isAuthenticRequest(req: Request) {
   const authHeader = req.headers.get('X-Telegram-Bot-Api-Secret-Token');
@@ -40,14 +39,17 @@ export async function POST(req: Request) {
       }
       
       // Create or update user
-      await findOrCreateTelegramUser({
-        id: update.message.from.id,
-        username: update.message.from.username,
-        first_name: update.message.from.first_name,
-        last_name: update.message.from.last_name,
-      });
+      await findOrCreateUserByChannel(
+        Channel.TELEGRAM,
+        update.message.from.id.toString(),
+        {
+          username: update.message.from.username,
+          firstName: update.message.from.first_name,
+          lastName: update.message.from.last_name,
+        }
+      );
       
-      const response = await sendMessage(chatId, `You said: ${text}`);
+      const response = await sendMessage(BigInt(update.message.chat.id), `You said: ${text}`);
       console.log("Telegram API response", response);
     }
 

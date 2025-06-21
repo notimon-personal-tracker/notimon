@@ -1,10 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { sendMessage } from '@/lib/telegram';
+import { sendWhatsappMessage } from '@/lib/whatsapp';
 import { sendDailyQuestions } from '@/lib/sendDailyQuestions';
+import { Channel } from '@/prisma/generated/prisma';
 
-// Mock the telegram sendMessage function
+// Mock the transport functions
 jest.mock('@/lib/telegram', () => ({
   sendMessage: jest.fn(),
+}));
+jest.mock('@/lib/whatsapp', () => ({
+  sendWhatsappMessage: jest.fn(),
 }));
 
 describe('sendDailyQuestions', () => {
@@ -13,6 +18,7 @@ describe('sendDailyQuestions', () => {
     await prisma.answer.deleteMany();
     await prisma.userQuestionPreference.deleteMany();
     await prisma.question.deleteMany();
+    await prisma.userChannel.deleteMany();
     await prisma.user.deleteMany();
 
     // Reset all mocks
@@ -24,12 +30,18 @@ describe('sendDailyQuestions', () => {
   });
 
   it('sends only subscribed questions to users', async () => {
-    // Create a test user
+    const telegramId = 123456789n;
+    // Create a test user with a Telegram channel
     const user = await prisma.user.create({
       data: {
-        telegramId: 123456789n,
         username: 'testuser',
         isActive: true,
+        channels: {
+          create: {
+            channel: Channel.TELEGRAM,
+            channelUserId: telegramId.toString(),
+          },
+        },
       },
     });
 
@@ -81,20 +93,21 @@ describe('sendDailyQuestions', () => {
 
     // Verify that sendMessage was called exactly twice
     expect(sendMessage).toHaveBeenCalledTimes(2);
+    expect(sendWhatsappMessage).not.toHaveBeenCalled();
 
     // Verify the content of the messages
     expect(sendMessage).toHaveBeenCalledWith(
-      user.telegramId,
+      telegramId,
       expect.stringContaining('Question 1?')
     );
     expect(sendMessage).toHaveBeenCalledWith(
-      user.telegramId,
+      telegramId,
       expect.stringContaining('Question 2?')
     );
 
     // Verify that Question 3 was not sent
     expect(sendMessage).not.toHaveBeenCalledWith(
-      user.telegramId,
+      telegramId,
       expect.stringContaining('Question 3?')
     );
 
@@ -104,5 +117,56 @@ describe('sendDailyQuestions', () => {
       expect(message).toMatch(/\d\. /); // Should contain numbered options
       expect(message).toContain('Please reply with the number of your choice');
     }
+  });
+
+  it('sends questions to a user with multiple channels', async () => {
+    const telegramId = 123456789n;
+    const whatsappId = '447123456789';
+
+    // Create a test user with both Telegram and WhatsApp channels
+    const user = await prisma.user.create({
+      data: {
+        username: 'multichanneluser',
+        isActive: true,
+        channels: {
+          create: [
+            { channel: Channel.TELEGRAM, channelUserId: telegramId.toString() },
+            { channel: Channel.WHATSAPP, channelUserId: whatsappId },
+          ],
+        },
+      },
+    });
+
+    const question = await prisma.question.create({
+      data: {
+        text: 'Multi-channel question?',
+        options: ['A', 'B'],
+        isActive: true,
+      },
+    });
+
+    await prisma.userQuestionPreference.create({
+      data: {
+        userId: user.id,
+        questionId: question.id,
+        isEnabled: true,
+      },
+    });
+
+    await sendDailyQuestions();
+
+    // Verify that both transports were called once
+    expect(sendMessage).toHaveBeenCalledTimes(1);
+    expect(sendWhatsappMessage).toHaveBeenCalledTimes(1);
+
+    // Verify the content of the messages
+    expect(sendMessage).toHaveBeenCalledWith(
+      telegramId,
+      expect.stringContaining('Multi-channel question?')
+    );
+    expect(sendWhatsappMessage).toHaveBeenCalledWith(
+      whatsappId,
+      expect.stringContaining('Multi-channel question?')
+    );
   });
 }); 

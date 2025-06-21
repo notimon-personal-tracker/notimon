@@ -1,23 +1,25 @@
 import { POST } from '@/app/api/telegram/webhook/route';
 import { prisma } from '@/lib/prisma';
+import { Channel } from '@/prisma/generated/prisma';
 import Head from 'next/head';
 import { NextRequest } from 'next/server';
 
 const originalFetch = global.fetch;
 const headers = {
   'Content-Type': 'application/json',
-  'X-Telegram-Bot-Api-Secret-Token': process.env.TELEGRAM_WEBHOOK_SECRET,
+  'X-Telegram-Bot-Api-Secret-Token': process.env.TELEGRAM_WEBHOOK_SECRET || '',
 };
 
 describe('Telegram Webhook', () => {
   beforeEach(async () => {
     // Clean up the database before each test
+    await prisma.userChannel.deleteMany();
     await prisma.user.deleteMany();
-
   });
 
   afterAll(async () => {
     // Clean up and close Prisma connection
+    await prisma.userChannel.deleteMany();
     await prisma.user.deleteMany();
     await prisma.$disconnect();
     global.fetch = originalFetch;
@@ -65,18 +67,28 @@ describe('Telegram Webhook', () => {
     expect(response.status).toBe(200);
 
     // Verify the user was created in the database
-    const user = await prisma.user.findUnique({
-      where: { telegramId: 123456789 },
+    const userChannel = await prisma.userChannel.findUnique({
+      where: {
+        channel_channelUserId: {
+          channel: Channel.TELEGRAM,
+          channelUserId: '123456789',
+        },
+      },
+      include: {
+        user: true,
+      },
     });
 
-    expect(user).toBeTruthy();
-    expect(user?.telegramId).toBe(BigInt(123456789));
-    expect(user?.username).toBe('johndoe');
-    expect(user?.firstName).toBe('John');
-    expect(user?.lastName).toBe('Doe');
-    expect(user?.isActive).toBe(true);
+    expect(userChannel).toBeTruthy();
+    expect(userChannel?.user).toBeTruthy();
+    expect(userChannel?.channelUserId).toBe('123456789');
+    expect(userChannel?.user.username).toBe('johndoe');
+    expect(userChannel?.user.firstName).toBe('John');
+    expect(userChannel?.user.lastName).toBe('Doe');
+    expect(userChannel?.user.isActive).toBe(true);
 
     expect((await prisma.user.findMany()).length).toBe(1);
+    expect((await prisma.userChannel.findMany()).length).toBe(1);
   });
 
   it('should respond with intro to /start command without creating a user', async () => {
@@ -124,5 +136,8 @@ describe('Telegram Webhook', () => {
     // Verify no user was created
     const users = await prisma.user.findMany();
     expect(users.length).toBe(0);
+
+    const channels = await prisma.userChannel.findMany();
+    expect(channels.length).toBe(0);
   });
 });

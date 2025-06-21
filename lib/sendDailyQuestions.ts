@@ -1,21 +1,24 @@
 import { prisma } from './prisma';
 import { sendMessage } from './telegram';
-import { Question, User, UserQuestionPreference } from '../prisma/generated/prisma';
+import { sendWhatsappMessage } from './whatsapp';
+import { Channel, Question, User, UserQuestionPreference } from '../prisma/generated/prisma';
 
 async function sendDailyQuestions() {
   try {
-    // Get all active questions
+    // Get all active questions with user preferences
     const questions = await prisma.question.findMany({
-      where: {
-        isActive: true,
-      },
+      where: { isActive: true },
       include: {
         preferences: {
-          where: {
-            isEnabled: true,
-          },
+          where: { isEnabled: true },
           include: {
-            user: true,
+            user: {
+              include: {
+                channels: {
+                  where: { isEnabled: true },
+                },
+              },
+            },
           },
         },
       },
@@ -29,14 +32,21 @@ async function sendDailyQuestions() {
       
       const messageText = `${question.text}\n\n${optionsText}\n\nPlease reply with the number of your choice.`;
 
-      // Send to each user who has opted in
+      // Send to each user on their active channels
       for (const pref of question.preferences) {
         if (pref.user.isActive) {
-          try {
-            await sendMessage(pref.user.telegramId, messageText);
-            console.log(`Sent question to user ${pref.user.telegramId}`);
-          } catch (error) {
-            console.error(`Failed to send question to user ${pref.user.telegramId}:`, error);
+          for (const channel of pref.user.channels) {
+            try {
+              if (channel.channel === Channel.TELEGRAM) {
+                await sendMessage(BigInt(channel.channelUserId), messageText);
+                console.log(`Sent question to user ${pref.user.id} on Telegram`);
+              } else if (channel.channel === Channel.WHATSAPP) {
+                await sendWhatsappMessage(channel.channelUserId, messageText);
+                console.log(`Sent question to user ${pref.user.id} on WhatsApp`);
+              }
+            } catch (error) {
+              console.error(`Failed to send question to user ${pref.user.id} on channel ${channel.channel}:`, error);
+            }
           }
         }
       }

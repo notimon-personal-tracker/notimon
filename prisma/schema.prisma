@@ -21,7 +21,6 @@ enum Channel {
 
 model User {
   id            String    @id @default(cuid())
-  telegramId    BigInt?   @unique
   username      String?   @unique
   firstName     String?
   lastName      String?
