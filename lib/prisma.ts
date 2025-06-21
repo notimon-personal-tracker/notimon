@@ -29,4 +29,12 @@ export async function findOrCreateTelegramUser(telegramData: {
       lastMessageAt: new Date(),
     },
   });
+}
+
+export async function findOrCreateWhatsappUser(whatsappData: {
+  id: string;
+  // Add more fields as needed
+}) {
+  // TODO: Implement this after updating the User model for WhatsApp
+  return null;
 } 

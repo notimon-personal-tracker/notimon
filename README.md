@@ -51,14 +51,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 Set up the Telegram webhook using the following command (replace with your values):
 ```bash
-curl -F "url=https://your-domain.com/api/telegram/webhook" https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook
+curl -F "url=https://your-domain.com/api/telegram/webhook" -F "secret_token=..." https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook
 ```
 
 ### Environment Variables
 
-```
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/notimon"
-TELEGRAM_BOT_TOKEN="your_bot_token_here"
+- `DATABASE_URL` e.g. `postgresql://postgres:postgres@localhost:5432/notimon`
+- `TELEGRAM_BOT_TOKEN`: Token used to authenticate with telegram bot API
+- `TELEGRAM_WEBHOOK_SECRET`: A secret token to be sent in a header “X-Telegram-Bot-Api-Secret-Token” in every webhook request, 1-256 characters. Only characters A-Z, a-z, 0-9, _ and - are allowed. The header is useful to ensure that the request comes from a webhook set by you.
+
 ```
 
 ### Run migrations

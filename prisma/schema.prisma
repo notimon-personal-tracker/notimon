@@ -14,9 +14,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Channel {
+  TELEGRAM
+  WHATSAPP
+}
+
 model User {
   id            String    @id @default(cuid())
-  telegramId    BigInt    @unique
+  telegramId    BigInt?   @unique
   username      String?   @unique
   firstName     String?
   lastName      String?
@@ -26,6 +31,20 @@ model User {
   lastMessageAt DateTime?
   preferences   UserQuestionPreference[]
   answers       Answer[]
+  channels      UserChannel[]
+}
+
+model UserChannel {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  channel       Channel
+  channelUserId String
+  isEnabled     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([channel, channelUserId])
 }
 
 model Question {
