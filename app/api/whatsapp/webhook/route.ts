@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findOrCreateWhatsappUser } from '@/lib/prisma';
+import { findOrCreateUserByChannel, prisma } from '@/lib/prisma';
 import { sendWhatsappMessage } from '@/lib/whatsapp';
+import { sendNextQuestionToUser } from '@/lib/sendDailyQuestions';
+import { Channel } from '@/prisma/generated/prisma';
 import * as crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
@@ -55,26 +57,80 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const update = JSON.parse(body);
+  console.log("whatsapp webhook received", JSON.stringify(update, null, 2));
 
-  //if(body.field !== 'messages'){
-  // not from the messages webhook so dont process
-  console.log("whatsapp webhook received", JSON.stringify(update, null, 2))
-  return NextResponse.json("", { status: 200 })
-  //}
-  /*const message = body.value.message
- 
-  if (from && text) {
-    if (text.toLowerCase() === 'start') {
-      await sendWhatsappMessage(
-        from,
-        '👋 Welcome! I\'m your notification bot.\n\nYour account will be created automatically when you send your first message. Feel free to start chatting!'
-      );
-      return NextResponse.json({ ok: true });
+  // Handle WhatsApp messages
+  if (update.entry && update.entry[0] && update.entry[0].changes) {
+    for (const change of update.entry[0].changes) {
+      if (change.field === 'messages' && change.value.messages) {
+        for (const message of change.value.messages) {
+          const from = message.from;
+          
+          // Handle interactive list responses
+          if (message.interactive && message.interactive.type === 'list_reply') {
+            const listReply = message.interactive.list_reply;
+            console.log(`Received list response: ${listReply.id} (${listReply.title}) from ${from}`);
+            
+            const user = await findOrCreateUserByChannel(
+              Channel.WHATSAPP,
+              from,
+              {}
+            );
+            
+            // Send the next question in the sequence
+            const sentNext = await sendNextQuestionToUser(
+              user.id,
+              Channel.WHATSAPP,
+              from
+            );
+            
+            if (!sentNext) {
+              // No more questions for today
+              await sendWhatsappMessage(
+                from,
+                '✅ That\'s all your questions for today! Thank you for participating.'
+              );
+            }
+            continue;
+          }
+          
+          // Handle regular text messages
+          const text = message.text?.body;
+          if (from && text) {
+            // Handle start command or template response
+            if (text.toLowerCase() === 'yes' || text.toLowerCase() === 'start') {
+              // User is starting or continuing the sequence
+              const user = await findOrCreateUserByChannel(
+                Channel.WHATSAPP,
+                from,
+                { 
+                  // WhatsApp doesn't provide username/firstName/lastName in message
+                }
+              );
+              
+              // Send the first/next question
+              const sentNext = await sendNextQuestionToUser(
+                user.id,
+                Channel.WHATSAPP,
+                from
+              );
+              
+              if (!sentNext) {
+                await sendWhatsappMessage(
+                  from,
+                  '✅ That\'s all your questions for today! Thank you for participating.'
+                );
+              }
+            } else {
+              // Regular message - just echo back
+              await findOrCreateUserByChannel(Channel.WHATSAPP, from, {});
+              await sendWhatsappMessage(from, `You said: ${text}`);
+            }
+          }
+        }
+      }
     }
- 
-    await findOrCreateWhatsappUser({ id: from });
-    await sendWhatsappMessage(from, `You said: ${text}`);
   }
- 
-  return NextResponse.json({ ok: true });*/
+
+  return NextResponse.json("", { status: 200 });
 } 

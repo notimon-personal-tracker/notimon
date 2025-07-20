@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { findOrCreateUserByChannel } from '@/lib/prisma';
+import { findOrCreateUserByChannel, prisma } from '@/lib/prisma';
 import { sendMessage } from '@/lib/telegram';
+import { sendNextQuestionToUser } from '@/lib/sendDailyQuestions';
 import * as crypto from 'crypto'
 import { Channel } from '@/prisma/generated/prisma';
 
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       }
       
       // Create or update user
-      await findOrCreateUserByChannel(
+      const user = await findOrCreateUserByChannel(
         Channel.TELEGRAM,
         update.message.from.id.toString(),
         {
@@ -48,9 +49,39 @@ export async function POST(req: Request) {
           lastName: update.message.from.last_name,
         }
       );
+
+      // Check if this is a response from a reply keyboard (question answer)
+      // We can identify this by checking if the user has an active question sequence
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
-      const response = await sendMessage(BigInt(update.message.chat.id), `You said: ${text}`);
-      console.log("Telegram API response", response);
+      const hasActiveSequence = await prisma.dailyQuestionSequence.findFirst({
+        where: {
+          userId: user.id,
+          date: today,
+        },
+      });
+
+      if (hasActiveSequence) {
+        // This is likely a response to a question - send the next question
+        const sentNext = await sendNextQuestionToUser(
+          user.id, 
+          Channel.TELEGRAM, 
+          chatId.toString()
+        );
+        
+        if (!sentNext) {
+          // No more questions for today
+          await sendMessage(
+            BigInt(chatId),
+            '✅ That\'s all your questions for today! Thank you for participating.'
+          );
+        }
+      } else {
+        // Regular message - just echo back
+        const response = await sendMessage(BigInt(update.message.chat.id), `You said: ${text}`);
+        console.log("Telegram API response", response);
+      }
     }
 
     return NextResponse.json({ ok: true });

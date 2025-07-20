@@ -2,7 +2,27 @@
 
 A quantified self app to help you track anything about yourself.
 
-The first iteration is a telegram bot that periodically asks you questions and stores your responses for later analysis.
+
+## How it works
+
+It can be helpful to have time series data to understand health and wellbeing issues. It can be hard to remember to fill in the information needed to build up data like this.
+
+The idea with notimon is to get notifications periodically to help you collect the data regardless of your schedule. To make it as effortless as possible, notimon sends multiple choice questions, and all the data is collected as answers to these questions.
+
+
+## Design
+
+- A user can be connected to one or more messaging services which support multiple choice question/answer messages - these provide the notifications so we don't have to implement that. 
+- A user signs up simply by sending a message to the service using their chosen messaging platform
+- Once a day we start the messaging sequence. A messaging sequence is sending a question, and once you answer a question, sending the next question, until all your questions for the day have been sent. The next day a new sequence starts.
+
+
+### Messaging service specifics
+
+#### Facebook
+
+Facebook only allows ad-hoc messages from a bot (notimon) to a user if the user has sent a message to the bot in the past 24 hours. Facebook does allow a pre-approved template message to be sent otherwise. So we start the sequence with facebook by sending an approved template message asking the user if it's ok to send the day's messages. If the user responds yes, we proceed with the questions.
+
 
 ## Development
 

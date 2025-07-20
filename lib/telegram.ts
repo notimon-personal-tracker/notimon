@@ -42,3 +42,29 @@ export async function sendMessage(
     throw error;
   }
 }
+
+/**
+ * Sends a message with reply keyboard markup to a Telegram user
+ * @param chatId The Telegram chat ID to send the message to
+ * @param text The message text to send
+ * @param options Array of button options
+ * @returns A promise that resolves with the API response
+ */
+export async function sendMessageWithKeyboard(
+  chatId: bigint,
+  text: string,
+  options: string[]
+): Promise<any> {
+  // Create keyboard with options as buttons
+  const keyboard = options.map(option => [{ text: option }]);
+  
+  const replyMarkup = {
+    keyboard: keyboard,
+    one_time_keyboard: true,
+    resize_keyboard: true
+  };
+
+  return sendMessage(chatId, text, {
+    reply_markup: replyMarkup
+  });
+}
