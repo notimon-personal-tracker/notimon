@@ -91,6 +91,8 @@ This process is described in more detail in [WhatsApp's documentation](https://b
 - `DATABASE_URL` e.g. `postgresql://postgres:postgres@localhost:5432/notimon`
 - `TELEGRAM_BOT_TOKEN`: Token used to authenticate with telegram bot API
 - `TELEGRAM_WEBHOOK_SECRET`: A secret token to be sent in a header "X-Telegram-Bot-Api-Secret-Token" in every webhook request, 1-256 characters. Only characters A-Z, a-z, 0-9, _ and - are allowed. The header is useful to ensure that the request comes from a webhook set by you.
+- `WHATSAPP_ACCESS_TOKEN`: Access token for the WhatsApp Business API (from Meta for Developers)
+- `WHATSAPP_PHONE_NUMBER_ID`: The WhatsApp Business phone number ID (from Meta for Developers)
 - `WHATSAPP_WEBHOOK_TOKEN`: A secret token used to verify the webhook URL with WhatsApp.
 - `FACEBOOK_APP_SECRET`: The Facebook app secret used to authenticate updates from Facebook.
 

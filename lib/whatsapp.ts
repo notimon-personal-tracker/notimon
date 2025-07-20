@@ -10,9 +10,52 @@ export async function sendWhatsappMessage(
   text: string,
   options: Record<string, any> = {}
 ): Promise<any> {
-  // TODO: Implement WhatsApp API integration
-  console.log(`[WhatsApp] Would send to ${to}: ${text}`);
-  return { ok: true };
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  
+  if (!accessToken) {
+    throw new Error('WHATSAPP_ACCESS_TOKEN environment variable is not set');
+  }
+  
+  if (!phoneNumberId) {
+    throw new Error('WHATSAPP_PHONE_NUMBER_ID environment variable is not set');
+  }
+
+  const url = `https://graph.facebook.com/v23.0/${phoneNumberId}/messages`;
+  
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to: to,
+    type: "text",
+    text: {
+      body: text
+    },
+    ...options
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`WhatsApp API error: ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log(`[WhatsApp] Sent message to ${to}:`, result);
+    return result;
+  } catch (error) {
+    console.error('Error sending WhatsApp message:', error);
+    throw error;
+  }
 }
 
 /**
@@ -27,9 +70,63 @@ export async function sendWhatsappTemplate(
   templateName: string,
   templateParameters: any[] = []
 ): Promise<any> {
-  // TODO: Implement WhatsApp template API integration
-  console.log(`[WhatsApp] Would send template "${templateName}" to ${to} with params:`, templateParameters);
-  return { ok: true };
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  
+  if (!accessToken) {
+    throw new Error('WHATSAPP_ACCESS_TOKEN environment variable is not set');
+  }
+  
+  if (!phoneNumberId) {
+    throw new Error('WHATSAPP_PHONE_NUMBER_ID environment variable is not set');
+  }
+
+  const url = `https://graph.facebook.com/v23.0/${phoneNumberId}/messages`;
+  
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to: to,
+    type: "template",
+    template: {
+      name: templateName,
+      language: {
+        code: "en_US"
+      },
+      components: templateParameters.length > 0 ? [
+        {
+          type: "body",
+          parameters: templateParameters.map(param => ({
+            type: "text",
+            text: param
+          }))
+        }
+      ] : []
+    }
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`WhatsApp API error: ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log(`[WhatsApp] Sent template "${templateName}" to ${to}:`, result);
+    return result;
+  } catch (error) {
+    console.error('Error sending WhatsApp template:', error);
+    throw error;
+  }
 }
 
 /**
@@ -44,6 +141,17 @@ export async function sendWhatsappInteractiveMessage(
   text: string,
   options: string[]
 ): Promise<any> {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  
+  if (!accessToken) {
+    throw new Error('WHATSAPP_ACCESS_TOKEN environment variable is not set');
+  }
+  
+  if (!phoneNumberId) {
+    throw new Error('WHATSAPP_PHONE_NUMBER_ID environment variable is not set');
+  }
+
   // Limit to 10 options as per WhatsApp API restrictions
   const limitedOptions = options.slice(0, 10);
   
@@ -76,7 +184,28 @@ export async function sendWhatsappInteractiveMessage(
     }
   };
 
-  // TODO: Implement actual WhatsApp API call
-  console.log(`[WhatsApp] Would send interactive list to ${to}:`, JSON.stringify(payload, null, 2));
-  return { ok: true };
+  const url = `https://graph.facebook.com/v23.0/${phoneNumberId}/messages`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`WhatsApp API error: ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log(`[WhatsApp] Sent interactive list to ${to}:`, result);
+    return result;
+  } catch (error) {
+    console.error('Error sending WhatsApp interactive message:', error);
+    throw error;
+  }
 } 
