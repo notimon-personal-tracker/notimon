@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import UnsubscribeQuestionButton from "../../components/UnsubscribeQuestionButton"
+import PushNotificationToggle from "../../components/PushNotificationToggle"
 
 interface Question {
   id: string
@@ -98,6 +99,16 @@ export default function Account() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Push Notification Settings */}
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
+          <div className="px-6 py-8">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Notification Settings
+            </h2>
+            <PushNotificationToggle />
           </div>
         </div>
 

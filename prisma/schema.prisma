@@ -25,6 +25,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   preferences   UserQuestionPreference[]
   answers       Answer[]
+  pushSubscriptions PushNotificationSubscription[]
 }
 
 model Question {
@@ -82,4 +83,19 @@ model Answer {
   questionId String
   answer     String
   createdAt  DateTime @default(now())
+}
+
+model PushNotificationSubscription {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  endpoint   String
+  p256dh     String   // Push subscription p256dh key
+  auth       String   // Push subscription auth key
+  userAgent  String?  // To identify browser type
+  isEnabled  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, endpoint])
 }
