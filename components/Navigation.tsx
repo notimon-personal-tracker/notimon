@@ -20,6 +20,15 @@ export default function Navigation() {
           Topics
         </Link>
         
+        {session && (
+          <Link
+            href="/questions"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium"
+          >
+            Questions
+          </Link>
+        )}
+        
         {session ? (
           <div className="flex items-center gap-4">
             <Link
