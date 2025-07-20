@@ -14,11 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Channel {
-  TELEGRAM
-  WHATSAPP
-}
-
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -28,27 +23,8 @@ model User {
   lastName      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  isActive      Boolean   @default(true)
-  lastMessageAt DateTime?
-  fsmState      String?
-  fsmContext    Json?
   preferences   UserQuestionPreference[]
   answers       Answer[]
-  channels      UserChannel[]
-  dailyQuestions DailyQuestionSequence[]
-}
-
-model UserChannel {
-  id            String   @id @default(cuid())
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  channel       Channel
-  channelUserId String
-  isEnabled     Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([channel, channelUserId])
 }
 
 model Question {
@@ -61,7 +37,6 @@ model Question {
   preferences UserQuestionPreference[]
   answers     Answer[]
   topics      QuestionTopic[]
-  dailyQuestions DailyQuestionSequence[]
 }
 
 model Topic {
@@ -107,18 +82,4 @@ model Answer {
   questionId String
   answer     String
   createdAt  DateTime @default(now())
-}
-
-model DailyQuestionSequence {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId String
-  sentAt     DateTime @default(now())
-  date       DateTime @default(now()) @db.Date
-  answered   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-
-  @@unique([userId, questionId, date])
 }
