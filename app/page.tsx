@@ -20,6 +20,14 @@ export default function HomePage() {
             className="rounded-lg shadow-lg"
           />
         </div>
+        <div className="mt-8">
+          <Link
+            href="/topics"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Browse Question Topics
+          </Link>
+        </div>
       </div>
       <footer className="mt-8 text-gray-600 dark:text-gray-400">
         <Link href="/privacy" className="hover:underline">

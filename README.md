@@ -52,6 +52,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ### Environment Variables
 
+- `NEXTAUTH_SECRET` `your-super-secret-jwt-secret-here-replace-with-random-string`
+- `NEXTAUTH_URL` e.g. `http://localhost:3000`
 - `DATABASE_URL` e.g. `postgresql://postgres:postgres@localhost:5432/notimon`
 
 ### Run migrations
