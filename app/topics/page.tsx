@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { PrismaClient } from "../../prisma/generated/prisma"
+import { getPrisma } from "../../lib/prisma"
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic';
 
 export default async function TopicsPage() {
+  const prisma = getPrisma();
   const topics = await prisma.topic.findMany({
     where: {
       isActive: true

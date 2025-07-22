@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { getPrisma } from './prisma';
 import { Topic, Question, QuestionTopic } from '../prisma/generated/prisma';
 
 export interface CreateTopicInput {
@@ -18,6 +18,7 @@ export interface AddQuestionToTopicInput {
 }
 
 export async function createTopic(input: CreateTopicInput): Promise<Topic> {
+  const prisma = getPrisma();
   return await prisma.topic.create({
     data: {
       name: input.name,
@@ -31,6 +32,7 @@ export async function listTopics(): Promise<(Topic & {
     question: Question;
   })[];
 })[]> {
+  const prisma = getPrisma();
   return await prisma.topic.findMany({
     include: {
       questions: {
@@ -47,6 +49,7 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Questi
     topic: Topic;
   })[];
 }> {
+  const prisma = getPrisma();
   return await prisma.question.create({
     data: {
       text: input.text,
@@ -74,6 +77,7 @@ export async function listQuestions(): Promise<(Question & {
     topic: Topic;
   })[];
 })[]> {
+  const prisma = getPrisma();
   return await prisma.question.findMany({
     include: {
       topics: {
@@ -89,6 +93,7 @@ export async function addQuestionToTopic(input: AddQuestionToTopicInput): Promis
   question: Question;
   topic: Topic;
 }> {
+  const prisma = getPrisma();
   return await prisma.questionTopic.create({
     data: {
       questionId: input.questionId,

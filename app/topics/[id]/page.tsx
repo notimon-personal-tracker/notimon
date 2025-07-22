@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation"
-import { PrismaClient } from "../../../prisma/generated/prisma"
 import SubscribeButton from "../../../components/SubscribeButton"
 import QuestionSubscribeButton from "../../../components/QuestionSubscribeButton"
+import { getPrisma } from "../../../lib/prisma"
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id: string }>
@@ -11,7 +11,7 @@ interface Props {
 
 export default async function TopicPage({ params }: Props) {
   const { id } = await params
-  
+  const prisma = getPrisma();
   const topic = await prisma.topic.findUnique({
     where: {
       id: id,

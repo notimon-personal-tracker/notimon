@@ -1,6 +1,6 @@
 import webpush from 'web-push';
 import { SNSClient, CreatePlatformApplicationCommand, CreatePlatformEndpointCommand, PublishCommand } from '@aws-sdk/client-sns';
-import { prisma } from './prisma';
+import { getPrisma } from './prisma';
 
 // Configure web-push
 const vapidKeys = {
@@ -9,7 +9,7 @@ const vapidKeys = {
 };
 
 webpush.setVapidDetails(
-  'mailto:your-email@example.com', // Replace with your email
+  `mailto:${process.env.VAPID_CONTACT}`,
   vapidKeys.publicKey,
   vapidKeys.privateKey
 );
@@ -49,6 +49,7 @@ export async function savePushSubscription(
   userAgent?: string
 ): Promise<void> {
   try {
+    const prisma = getPrisma();
     await prisma.pushNotificationSubscription.upsert({
       where: {
         userId_endpoint: {
@@ -82,6 +83,7 @@ export async function savePushSubscription(
  * Get all active push subscriptions for a user
  */
 export async function getUserPushSubscriptions(userId: string) {
+  const prisma = getPrisma();
   return await prisma.pushNotificationSubscription.findMany({
     where: {
       userId,
@@ -97,6 +99,7 @@ export async function deletePushSubscription(
   userId: string,
   endpoint: string
 ): Promise<void> {
+  const prisma = getPrisma();
   await prisma.pushNotificationSubscription.deleteMany({
     where: {
       userId,
@@ -230,6 +233,7 @@ export async function sendPushNotificationToUser(
       
       // If the subscription is invalid, disable it
       if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 410) {
+        const prisma = getPrisma();
         await prisma.pushNotificationSubscription.update({
           where: { id: subscription.id },
           data: { isEnabled: false },

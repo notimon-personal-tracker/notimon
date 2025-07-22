@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { getPrisma } from '@/lib/prisma';
 import {
   createTopic,
   listTopics,
@@ -13,6 +13,7 @@ import {
 describe('Admin Library', () => {
   // Clean up the database before each test
   beforeEach(async () => {
+    const prisma = getPrisma();
     await prisma.answer.deleteMany();
     await prisma.questionTopic.deleteMany();
     await prisma.question.deleteMany();
@@ -21,6 +22,7 @@ describe('Admin Library', () => {
   });
 
   afterAll(async () => {
+    const prisma = getPrisma();
     await prisma.answer.deleteMany();
     await prisma.questionTopic.deleteMany();
     await prisma.question.deleteMany();

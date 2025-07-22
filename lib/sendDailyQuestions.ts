@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { getPrisma } from './prisma';
 import { sendPushNotificationToUsers, NotificationPayload } from './pushNotifications';
 
 /**
@@ -9,6 +9,7 @@ async function sendDailyQuestions() {
     console.log('Starting to send daily questions...');
     
     // Get all active users with their channels and push subscriptions
+    const prisma = getPrisma();
     const users = await prisma.user.findMany({
       include: {
         preferences: {
