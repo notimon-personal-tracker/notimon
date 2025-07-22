@@ -102,9 +102,6 @@ web-push generate-vapid-keys
 ```env
 VAPID_PUBLIC_KEY=your_vapid_public_key_here
 VAPID_PRIVATE_KEY=your_vapid_private_key_here
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_REGION=us-east-1
 ```
 
 3. Users can enable push notifications in their Account page

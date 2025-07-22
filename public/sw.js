@@ -1,36 +1,14 @@
 // Service Worker for Push Notifications
-const CACHE_NAME = 'notimon-v1';
-const urlsToCache = [
-  '/',
-  '/questions',
-  '/account',
-  '/offline.html'
-];
 
 // Install event
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
 });
 
 // Activate event
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating');
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
+  self.clients.claim();
 });
 
 // Push event - handle incoming push notifications
@@ -131,70 +109,6 @@ self.addEventListener('sync', (event) => {
       Promise.resolve()
     );
   }
-});
-
-// Fetch event - handle caching for offline functionality
-self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // Skip non-http(s) requests (chrome-extension, etc.)
-  if (!event.request.url.startsWith('http')) {
-    return;
-  }
-
-  // Skip requests from extensions or other unsupported schemes
-  const url = new URL(event.request.url);
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version if available
-        if (response) {
-          return response;
-        }
-
-        // Otherwise, fetch from network
-        return fetch(event.request).then((response) => {
-          // Don't cache non-200 responses
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Don't cache if response is not from same origin
-          if (response.type !== 'basic' && response.type !== 'cors') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          // Cache the response safely
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              // Additional check before caching
-              if (event.request.url.startsWith('http')) {
-                cache.put(event.request, responseToCache).catch((error) => {
-                  console.warn('Failed to cache request:', event.request.url, error);
-                });
-              }
-            })
-            .catch((error) => {
-              console.warn('Failed to open cache:', error);
-            });
-
-          return response;
-        }).catch(() => {
-          // Return offline page if available
-          return caches.match('/offline.html');
-        });
-      })
-  );
 });
 
 // Handle push subscription changes (for Safari)
