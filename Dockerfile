@@ -50,14 +50,6 @@ COPY ./lib ./lib
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./next/standalone
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./next/standalone/.next/static
 
-ARG VAPID_PUBLIC_KEY
-ARG VAPID_PRIVATE_KEY
-ARG VAPID_CONTACT
-
-ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
-ENV VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
-ENV VAPID_CONTACT=$VAPID_CONTACT
-
 USER nextjs
 
 EXPOSE 3000

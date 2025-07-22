@@ -1,27 +1,16 @@
 import webpush from 'web-push';
-import { SNSClient, CreatePlatformApplicationCommand, CreatePlatformEndpointCommand, PublishCommand } from '@aws-sdk/client-sns';
 import { getPrisma } from './prisma';
 
-// Configure web-push
-const vapidKeys = {
-  publicKey: process.env.VAPID_PUBLIC_KEY!,
-  privateKey: process.env.VAPID_PRIVATE_KEY!,
-};
 
-webpush.setVapidDetails(
-  `mailto:${process.env.VAPID_CONTACT}`,
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
-
-// Configure AWS SNS
-const snsClient = new SNSClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+function getRequestOptions(): webpush.RequestOptions {
+  return {
+    vapidDetails: {
+      subject: `mailto:${process.env.VAPID_CONTACT}`,
+      publicKey: process.env.VAPID_PUBLIC_KEY!,
+      privateKey: process.env.VAPID_PRIVATE_KEY!,
+    },
+  }
+}
 
 export interface PushSubscription {
   endpoint: string;
@@ -115,6 +104,7 @@ export async function sendWebPushNotification(
   subscription: PushSubscription,
   payload: NotificationPayload
 ): Promise<void> {
+  const options: webpush.RequestOptions = getRequestOptions();
   try {
     const notificationPayload = JSON.stringify({
       title: payload.title,
@@ -133,7 +123,7 @@ export async function sendWebPushNotification(
       ]
     });
 
-    await webpush.sendNotification(subscription, notificationPayload);
+    await webpush.sendNotification(subscription, notificationPayload, options);
   } catch (error) {
     console.error('Error sending web push notification:', error);
     throw error;
@@ -141,64 +131,7 @@ export async function sendWebPushNotification(
 }
 
 /**
- * Send push notification using AWS SNS (for Safari on iOS and other platforms)
- */
-export async function sendSNSPushNotification(
-  endpoint: string,
-  payload: NotificationPayload
-): Promise<void> {
-  try {
-    // For Safari, we need to use the APNS format
-    const apnsPayload = {
-      aps: {
-        alert: {
-          title: payload.title,
-          body: payload.body,
-        },
-        sound: 'default',
-        badge: 1,
-        'url-args': [payload.url || '/'],
-      },
-    };
-
-    const message = {
-      default: payload.body,
-      APNS: JSON.stringify(apnsPayload),
-      APNS_SANDBOX: JSON.stringify(apnsPayload),
-    };
-
-    const publishCommand = new PublishCommand({
-      TargetArn: endpoint,
-      Message: JSON.stringify(message),
-      MessageStructure: 'json',
-    });
-
-    await snsClient.send(publishCommand);
-  } catch (error) {
-    console.error('Error sending SNS push notification:', error);
-    throw error;
-  }
-}
-
-/**
- * Detect browser type from user agent
- */
-export function getBrowserType(userAgent?: string): 'chrome' | 'safari' | 'firefox' | 'other' {
-  if (!userAgent) return 'other';
-  
-  if (userAgent.includes('Chrome') && !userAgent.includes('Edge')) {
-    return 'chrome';
-  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-    return 'safari';
-  } else if (userAgent.includes('Firefox')) {
-    return 'firefox';
-  }
-  
-  return 'other';
-}
-
-/**
- * Send push notification to a user (tries both web-push and SNS based on browser)
+ * Send push notification to a user
  */
 export async function sendPushNotificationToUser(
   userId: string,
@@ -210,7 +143,6 @@ export async function sendPushNotificationToUser(
 
   for (const subscription of subscriptions) {
     try {
-      const browserType = getBrowserType(subscription.userAgent || undefined);
       const webPushSubscription: PushSubscription = {
         endpoint: subscription.endpoint,
         keys: {
@@ -219,13 +151,7 @@ export async function sendPushNotificationToUser(
         },
       };
 
-      if (browserType === 'safari' || subscription.endpoint.includes('apple')) {
-        // Use SNS for Safari/iOS
-        await sendSNSPushNotification(subscription.endpoint, payload);
-      } else {
-        // Use web-push for Chrome and other browsers
-        await sendWebPushNotification(webPushSubscription, payload);
-      }
+      await sendWebPushNotification(webPushSubscription, payload);
       
       sent++;
     } catch (error) {

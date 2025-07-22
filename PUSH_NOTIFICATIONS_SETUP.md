@@ -1,6 +1,6 @@
 # Push Notifications Setup Guide
 
-This guide explains how to set up web push notifications for Chrome and Safari on iOS using Amazon SNS.
+This guide explains how to set up web push notifications
 
 ## Environment Variables Required
 
@@ -11,13 +11,8 @@ Add these environment variables to your `.env.local` file:
 VAPID_PUBLIC_KEY=your_vapid_public_key_here
 VAPID_PRIVATE_KEY=your_vapid_private_key_here
 
-# AWS SNS Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_REGION=us-east-1
-
 # Email for VAPID (replace with your email)
-VAPID_EMAIL=your-email@example.com
+VAPID_CONTACT=your-email@example.com
 ```
 
 ## Generating VAPID Keys
@@ -34,30 +29,9 @@ web-push generate-vapid-keys
 
 3. Copy the generated public and private keys to your environment variables.
 
-## AWS SNS Setup
-
-### For Safari on iOS Push Notifications:
-
-1. **Create an Apple Push Notification Certificate:**
-   - Go to Apple Developer Portal
-   - Create a Website Push ID
-   - Generate a certificate for Safari push notifications
-   - Download the certificate and convert to .pem format
-
-2. **Create SNS Platform Application:**
-   - Go to AWS SNS Console
-   - Create Platform Application
-   - Choose "Apple Push Notification service Sandbox" (or production)
-   - Upload your certificate
-
-3. **Update the push notification service:**
-   - Update `lib/pushNotifications.ts` with your SNS Platform Application ARN
-   - Configure the APNS settings for your domain
-
 ## Features Implemented
 
 ✅ **Web Push for Chrome/Firefox:** Using VAPID keys and service worker
-✅ **Safari iOS Support:** Using AWS SNS with APNS
 ✅ **Database Storage:** Push subscriptions stored in PostgreSQL
 ✅ **User Management:** Subscribe/unsubscribe functionality
 ✅ **Daily Notifications:** Integrated with `send-questions` command
@@ -74,7 +48,6 @@ web-push generate-vapid-keys
 2. **Daily questions command runs:**
    - Finds users with question subscriptions AND push subscriptions
    - Sends "Time to fill in your answers!" message
-   - Uses web-push for Chrome/Firefox, SNS for Safari
 
 3. **User receives notification:**
    - Notification shows with app icon
@@ -102,10 +75,6 @@ npm run send-questions
 1. **VAPID keys not working:**
    - Ensure keys are properly base64 encoded
    - Check that public key matches in client and server
-
-2. **Safari notifications not working:**
-   - Verify AWS SNS setup with correct APNS certificate
-   - Check that Website Push ID matches your domain
 
 3. **Service worker not registering:**
    - Ensure HTTPS in production
@@ -136,6 +105,5 @@ Set up the daily notifications to run automatically:
 ## Security Considerations
 
 - VAPID keys should be kept secure and not committed to version control
-- AWS credentials should have minimal required permissions (SNS publish only)
 - Push subscriptions are tied to user accounts for privacy
 - Service worker caches are versioned to prevent stale data 

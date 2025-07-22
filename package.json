@@ -36,7 +36,6 @@
     "tailwindcss": "^4.1.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "@aws-sdk/client-sns": "^3.509.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
