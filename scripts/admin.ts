@@ -1,18 +1,67 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import { stdin as input, stdout as output } from 'process';
 import { 
   createTopic, 
   listTopics, 
   createQuestion, 
   listQuestions, 
   addQuestionToTopic,
+  resetUserPassword,
   CreateTopicInput,
   CreateQuestionInput,
   AddQuestionToTopicInput
 } from '../lib/admin';
 
 const program = new Command();
+
+function promptHidden(query: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!input.isTTY) {
+      reject(new Error('Interactive password prompt requires a TTY'));
+      return;
+    }
+
+    let password = '';
+
+    const cleanup = () => {
+      input.off('data', onData);
+      input.setRawMode(false);
+      input.pause();
+    };
+
+    const onData = (chunk: Buffer) => {
+      const value = chunk.toString('utf8');
+
+      if (value === '\u0003') {
+        output.write('\n');
+        cleanup();
+        reject(new Error('Password prompt cancelled'));
+        return;
+      }
+
+      if (value === '\r' || value === '\n') {
+        output.write('\n');
+        cleanup();
+        resolve(password);
+        return;
+      }
+
+      if (value === '\u007f') {
+        password = password.slice(0, -1);
+        return;
+      }
+
+      password += value;
+    };
+
+    output.write(query);
+    input.setRawMode(true);
+    input.resume();
+    input.on('data', onData);
+  });
+}
 
 program
   .name('notimon-admin')
@@ -114,6 +163,30 @@ program
       console.log(`Associated question "${questionTopic.question.text}" with topic "${questionTopic.topic.name}"`);
     } catch (error) {
       console.error('Error associating question with topic:', error);
+      process.exit(1);
+    }
+  });
+
+// User management
+program
+  .command('reset-user-password')
+  .description('Reset a user password by email')
+  .requiredOption('-e, --email <email>', 'User email')
+  .action(async (options: { email: string }) => {
+    try {
+      const newPassword = await promptHidden('Enter new password: ');
+      if (!newPassword) {
+        throw new Error('New password is required');
+      }
+
+      const user = await resetUserPassword({
+        email: options.email,
+        newPassword,
+      });
+
+      console.log(`Password reset successfully for ${user.email} (${user.id})`);
+    } catch (error) {
+      console.error('Error resetting user password:', error);
       process.exit(1);
     }
   });

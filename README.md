@@ -157,11 +157,19 @@ npm run admin -- list-questions
 npm run admin -- add-question-to-topic -q question_id -t topic_id
 ```
 
+### Users (sysadmin)
+
+```bash
+# Reset a user password by email (password is entered via hidden prompt)
+npm run admin -- reset-user-password -e "user@example.com"
+```
+
 Each command supports the `--help` flag for more information:
 ```bash
 npm run admin -- --help
 npm run admin -- create-topic --help
 npm run admin -- create-question --help
+npm run admin -- reset-user-password --help
 ```
 
 Remember: When passing arguments to the admin script through npm, you need to add `--` before the arguments.

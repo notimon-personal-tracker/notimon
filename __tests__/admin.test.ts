@@ -1,10 +1,12 @@
 import { getPrisma } from '@/lib/prisma';
+import bcryptjs from 'bcryptjs';
 import {
   createTopic,
   listTopics,
   createQuestion,
   listQuestions,
   addQuestionToTopic,
+  resetUserPassword,
   CreateTopicInput,
   CreateQuestionInput,
   AddQuestionToTopicInput
@@ -173,6 +175,47 @@ describe('Admin Library', () => {
 
       await addQuestionToTopic(input);
       await expect(addQuestionToTopic(input)).rejects.toThrow();
+    });
+  });
+
+  describe('User Password Management', () => {
+    it('should reset a user password by email', async () => {
+      const prisma = getPrisma();
+      const oldPassword = 'old-password';
+      const newPassword = 'new-password';
+      const oldPasswordHash = await bcryptjs.hash(oldPassword, 12);
+
+      const user = await prisma.user.create({
+        data: {
+          email: 'reset@example.com',
+          password: oldPasswordHash
+        }
+      });
+
+      const resetResult = await resetUserPassword({
+        email: user.email,
+        newPassword
+      });
+
+      const updatedUser = await prisma.user.findUnique({
+        where: {
+          email: user.email
+        }
+      });
+
+      expect(resetResult.id).toBe(user.id);
+      expect(resetResult.email).toBe(user.email);
+      expect(updatedUser).not.toBeNull();
+      expect(updatedUser!.password).not.toBe(oldPasswordHash);
+      expect(await bcryptjs.compare(newPassword, updatedUser!.password)).toBe(true);
+      expect(await bcryptjs.compare(oldPassword, updatedUser!.password)).toBe(false);
+    });
+
+    it('should fail when resetting password for unknown email', async () => {
+      await expect(resetUserPassword({
+        email: 'missing@example.com',
+        newPassword: 'new-password'
+      })).rejects.toThrow('User with email "missing@example.com" was not found');
     });
   });
 }); 

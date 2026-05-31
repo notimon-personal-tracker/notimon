@@ -1,5 +1,6 @@
 import { getPrisma } from './prisma';
 import { Topic, Question, QuestionTopic } from '../prisma/generated/prisma';
+import bcryptjs from 'bcryptjs';
 
 export interface CreateTopicInput {
   name: string;
@@ -15,6 +16,11 @@ export interface CreateQuestionInput {
 export interface AddQuestionToTopicInput {
   questionId: string;
   topicId: string;
+}
+
+export interface ResetUserPasswordInput {
+  email: string;
+  newPassword: string;
 }
 
 export async function createTopic(input: CreateTopicInput): Promise<Topic> {
@@ -105,3 +111,48 @@ export async function addQuestionToTopic(input: AddQuestionToTopicInput): Promis
     },
   });
 } 
+
+export async function resetUserPassword(input: ResetUserPasswordInput): Promise<{
+  id: string;
+  email: string;
+  updatedAt: Date;
+}> {
+  if (!input.email) {
+    throw new Error('Email is required');
+  }
+
+  if (!input.newPassword) {
+    throw new Error('New password is required');
+  }
+
+  const prisma = getPrisma();
+  const user = await prisma.user.findUnique({
+    where: {
+      email: input.email,
+    },
+    select: {
+      id: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error(`User with email "${input.email}" was not found`);
+  }
+
+  const hashedPassword = await bcryptjs.hash(input.newPassword, 12);
+
+  return await prisma.user.update({
+    where: {
+      email: input.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      email: true,
+      updatedAt: true,
+    },
+  });
+}
