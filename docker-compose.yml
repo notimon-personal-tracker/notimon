@@ -5,6 +5,10 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/notimon
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=dev-only-change-me-notimon
+      - VAPID_PUBLIC_KEY=
+      - VAPID_PRIVATE_KEY=
     depends_on:
       - db
 

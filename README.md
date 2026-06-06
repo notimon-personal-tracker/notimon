@@ -55,6 +55,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - `NEXTAUTH_SECRET` `your-super-secret-jwt-secret-here-replace-with-random-string`
 - `NEXTAUTH_URL` e.g. `http://localhost:3000`
 - `DATABASE_URL` e.g. `postgresql://postgres:postgres@localhost:5432/notimon`
+- `DISABLE_HSTS_IN_DEV` set to `true` to skip the `Strict-Transport-Security` header during local development only
 
 ### Run migrations
 
